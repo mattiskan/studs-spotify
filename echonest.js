@@ -1,14 +1,16 @@
+var artistNodes;
+
+
 function buildGraph(baseArtist) {
 
     getRelatedArtists(baseArtist, function(relatedArtists){
-	var artistNodes = [];
+	artistNodes = [];
 	var edges = [];
 	
 	artistNodes.push( {id:0, label:baseArtist} );
 	
 	var id=1;
 	relatedArtists.forEach(function(artist){
-	    console.log(artist.name+id);
 	    artistNodes.push({id: id, label:artist.name});
 	    edges.push({from:0, to:id});
 
@@ -26,8 +28,10 @@ function buildGraph(baseArtist) {
 	var graph = new vis.Graph(container, data, options);
 
 	graph.on('click', function(e){
-	    console.log(e);
-	    playSong("avicii");
+	    var clickedArtist=artistNodes[e.nodes[0]].label;
+	    console.log("clicked " + clickedArtist);
+	    playSong(clickedArtist);
+	    buildGraph(clickedArtist);
 	});
     });
 }
@@ -38,14 +42,13 @@ function getRelatedArtists(artist, callback) {
     $.get(url)
     .done(function(response){
 	callback(response.response.artists);
+
     });
 }
 
 function playSong(artistName){
     var baseUrl="https://api.spotify.com/v1/"; 
-    console.log(baseUrl+"artists/search?q="+artistName);
-    $.get(baseUrl+"artists/search?q="+artistName).done(function (response) {
-	console.log(response);
+    $.ajax(baseUrl+"artists/search?q="+artistName).done(function (response) {
 	var uri=response.items[0].uri;
 
 	$("#player").html('  <iframe src="https://embed.spotify.com/?uri='+uri+'" width="300" height="380" frameborder="0" allowtransparency="true"></iframe>');
